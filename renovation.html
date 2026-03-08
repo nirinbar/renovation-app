@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מעקב שיפוצים</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #e8e8e8; font-family: 'Segoe UI', Arial, sans-serif; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #1a1f2e, #16213e); border-bottom: 1px solid #2a3050; padding: 16px 20px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 24px #0008; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #f59e0b, #ef4444); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .logo-title { font-size: 18px; font-weight: 800; }
+  .logo-sub { font-size: 11px; color: #6b7280; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .sync-status { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .tabs { display: flex; gap: 4px; }
+  .tab { padding: 8px 16px; border-radius: 8px 8px 0 0; background: transparent; border: 1px solid transparent; color: #9ca3af; cursor: pointer; font-size: 13px; font-family: inherit; transition: all .18s; }
+  .tab.active { background: #0f1117; border-color: #2a3050; border-bottom-color: #0f1117; color: #f59e0b; font-weight: 700; }
+  .content { padding: 20px 16px; max-width: 900px; margin: 0 auto; }
+  .card { background: #1a1f2e; border-radius: 14px; padding: 18px; border: 1px solid #2a3050; margin-bottom: 16px; }
+  .btn-primary { background: linear-gradient(135deg, #f59e0b, #ef4444); border: none; border-radius: 9px; padding: 9px 18px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit; }
+  .btn-ghost { background: transparent; border: 1px solid #2a3050; border-radius: 9px; padding: 9px 16px; color: #9ca3af; cursor: pointer; font-size: 14px; font-family: inherit; }
+  .btn-sm { background: #2a3050; border: 1px solid #3a4060; border-radius: 8px; color: #e8e8e8; padding: 6px 12px; cursor: pointer; font-size: 12px; font-family: inherit; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; color: #9ca3af; }
+  input, select, textarea { width: 100%; background: #0f1117; border: 1px solid #2a3050; border-radius: 8px; padding: 9px 12px; color: #e8e8e8; font-size: 14px; font-family: inherit; outline: none; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: #1a1f2e; border-radius: 12px; padding: 16px; border: 1px solid #2a3050; }
+  .stat-icon { font-size: 24px; margin-bottom: 8px; }
+  .stat-value { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: #6b7280; }
+  .payment-row { background: #1a1f2e; border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; border: 1px solid #2a3050; display: flex; align-items: center; gap: 12px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .row-info { flex: 1; }
+  .row-title { font-weight: 700; margin-bottom: 2px; }
+  .row-sub { font-size: 12px; color: #6b7280; }
+  .badge { border-radius: 7px; padding: 2px 9px; font-size: 11px; font-weight: 600; }
+  .icon-btn { background: transparent; border: none; cursor: pointer; font-size: 15px; padding: 3px 5px; color: #6b7280; }
+  .progress-bar { background: #2a3050; border-radius: 99px; height: 9px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+  .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #2a3050; font-size: 13px; }
+  .error-bar { background: #f871711a; border: 1px solid #f87171; color: #f87171; padding: 10px 16px; font-size: 13px; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+  .loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: #9ca3af; font-size: 16px; }
+  .footer { text-align: center; padding: 16px; font-size: 12px; color: #374151; }
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: 1; }
+    .two-col { grid-template-columns: 1fr; }
+    .header-right .btn-sm span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading"><div style="font-size:40px">🏗️</div><div>מתחבר ל-Firebase...</div></div>
+</div>
+
+<script>
+const PROJECT_ID = "renovation-f82e7";
+const DOC_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/renovation/main`;
+
+let state = {
+  data: { payments: [], tasks: [], budget: 0 },
+  loading: true,
+  saving: false,
+  lastSaved: null,
+  error: null,
+  tab: "dashboard",
+  showPaymentForm: false,
+  showTaskForm: false,
+  editingPayment: null,
+  editingTask: null,
+  showBudgetEdit: false,
+  showExport: false,
+  paymentForm: { name: "", amount: "", category: "כללי", status: "ממתין", date: todayISO(), notes: "" },
+  taskForm: { title: "", category: "שיפוץ", status: "טרם התחיל", dueDate: "", notes: "", assignee: "" },
+  budgetInput: ""
+};
+
+const categories = ["עבודת אינסטלציה","חשמל","ריצוף","צבע","גבס","נגרות","מטבח","אמבטיה","כללי","אחר"];
+const taskCategories = ["תכנון","רכישות","שיפוץ","גימור","ניקיון","אחר"];
+const statusColors = { "שולם":"#4ade80","ממתין":"#facc15","בוטל":"#f87171" };
+const taskStatusColors = { "הושלם":"#4ade80","בתהליך":"#60a5fa","טרם התחיל":"#d1d5db","דחוף":"#f87171" };
+
+function todayISO() {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Jerusalem" });
+}
+function toILDate(iso) {
+  if (!iso) return "";
+  const [y,m,d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+async function fbGet() {
+  const res = await fetch(DOC_URL);
+  if (res.status === 404) return null;
+  const json = await res.json();
+  const val = json.fields?.data?.stringValue;
+  return val ? JSON.parse(val) : null;
+}
+async function fbSet(data) {
+  const res = await fetch(DOC_URL + "?updateMask.fieldPaths=data", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fields: { data: { stringValue: JSON.stringify(data) } } })
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+}
+
+async function loadData() {
+  try {
+    const d = await fbGet();
+    if (d) state.data = d;
+    state.lastSaved = "נטען בהצלחה";
+  } catch(e) {
+    state.error = "שגיאה בטעינה: " + e.message;
+  }
+  state.loading = false;
+  render();
+}
+
+async function saveData(newData) {
+  state.data = newData;
+  state.saving = true;
+  render();
+  try {
+    await fbSet(newData);
+    state.saving = false;
+    state.lastSaved = new Date().toLocaleTimeString("he-IL", { hour:"2-digit", minute:"2-digit", timeZone:"Asia/Jerusalem" });
+  } catch(e) {
+    state.saving = false;
+    state.error = "שגיאה בשמירה: " + e.message;
+  }
+  render();
+}
+
+// Poll every 20s
+setInterval(async () => {
+  try {
+    const d = await fbGet();
+    if (d) { state.data = d; render(); }
+  } catch(e) {}
+}, 20000);
+
+function render() {
+  const app = document.getElementById("app");
+  if (state.loading) { app.innerHTML = `<div class="loading"><div style="font-size:40px">🏗️</div><div>מתחבר ל-Firebase...</div></div>`; return; }
+
+  const d = state.data;
+  const totalPaid = d.payments.filter(p=>p.status==="שולם").reduce((a,b)=>a+Number(b.amount),0);
+  const totalPending = d.payments.filter(p=>p.status==="ממתין").reduce((a,b)=>a+Number(b.amount),0);
+  const totalPayments = d.payments.reduce((a,b)=>a+Number(b.amount),0);
+  const remaining = d.budget - totalPaid;
+  const completedTasks = d.tasks.filter(t=>t.status==="הושלם").length;
+  const totalTasks = d.tasks.length;
+  const budgetPct = d.budget > 0 ? Math.min(100,(totalPaid/d.budget)*100) : 0;
+  const budgetColor = budgetPct>85?"#ef4444":budgetPct>60?"#f59e0b":"#4ade80";
+  const syncColor = state.saving?"#f59e0b":"#4ade80";
+
+  let html = `
+  ${state.error ? `<div class="error-bar"><span>⚠️ ${state.error}</span><button onclick="clearError()" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:16px">✕</button></div>` : ""}
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">🏗️</div>
+        <div><div class="logo-title">מעקב שיפוצים</div><div class="logo-sub">Firebase · מסונכרן בין מכשירים</div></div>
+      </div>
+      <div class="header-right">
+        <button class="btn-sm" onclick="toggleExport()">📋 <span>ייצוא</span></button>
+        <div class="sync-status" style="color:${syncColor}">
+          <div class="sync-dot" style="background:${syncColor};box-shadow:0 0 6px ${syncColor}"></div>
+          ${state.saving?"שומר...":state.lastSaved?`נשמר ${state.lastSaved}`:"מסונכרן"}
+        </div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab ${state.tab==='dashboard'?'active':''}" onclick="setTab('dashboard')">📊 סקירה</button>
+      <button class="tab ${state.tab==='payments'?'active':''}" onclick="setTab('payments')">💳 תשלומים</button>
+      <button class="tab ${state.tab==='tasks'?'active':''}" onclick="setTab('tasks')">✅ משימות</button>
+    </div>
+  </div>
+  <div class="content">`;
+
+  // Export panel
+  if (state.showExport) {
+    html += `<div class="card" style="border-color:#3a4060;margin-bottom:16px">
+      <div style="font-weight:700;margin-bottom:10px;color:#60a5fa">📋 הנתונים שלך</div>
+      <textarea readonly style="height:140px;font-size:11px;color:#9ca3af;resize:none">${JSON.stringify(d,null,2)}</textarea>
+      <button class="btn-primary" style="margin-top:10px;font-size:12px" onclick="copyData()">העתק ללוח</button>
+    </div>`;
+  }
+
+  if (state.tab === "dashboard") {
+    html += `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-weight:700;font-size:15px">תקציב כולל</div>
+        <button class="btn-sm" onclick="toggleBudgetEdit()">✏️ עריכה</button>
+      </div>
+      ${state.showBudgetEdit ? `
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input type="number" id="budgetInput" value="${state.budgetInput}" placeholder="הכנס תקציב" oninput="state.budgetInput=this.value">
+        <button class="btn-primary" onclick="saveBudget()">שמור</button>
+        <button class="btn-ghost" onclick="state.showBudgetEdit=false;render()">ביטול</button>
+      </div>` : ""}
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#9ca3af;margin-bottom:8px">
+        <span>שולם: <b style="color:#4ade80">₪${totalPaid.toLocaleString()}</b></span>
+        <span>תקציב: <b style="color:#e8e8e8">₪${d.budget.toLocaleString()}</b></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${budgetPct}%;background:${budgetColor}"></div></div>
+      <div style="margin-top:8px;font-size:13px;color:#9ca3af">
+        נותר: <b style="color:${remaining>=0?'#4ade80':'#ef4444'}">₪${remaining.toLocaleString()}</b>
+        ${remaining<0?" ⚠️ חריגה מהתקציב!":""}
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value" style="color:#60a5fa">₪${totalPayments.toLocaleString()}</div><div class="stat-label">סה"כ תשלומים</div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value" style="color:#facc15">₪${totalPending.toLocaleString()}</div><div class="stat-label">ממתין לתשלום</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" style="color:#4ade80">${completedTasks}/${totalTasks}</div><div class="stat-label">משימות הושלמו</div></div>
+      <div class="stat-card"><div class="stat-icon">🔴</div><div class="stat-value" style="color:#f87171">${d.tasks.filter(t=>t.status==="דחוף").length}</div><div class="stat-label">משימות דחופות</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:10px;font-size:14px">תשלומים אחרונים</div>
+        ${d.payments.length===0?'<div style="color:#6b7280;font-size:13px">אין תשלומים עדיין</div>':
+          d.payments.slice(-4).reverse().map(p=>`
+          <div class="summary-row"><span>${p.name}</span><span style="color:${statusColors[p.status]||'#e8e8e8'};font-weight:600">₪${Number(p.amount).toLocaleString()}</span></div>`).join("")}
+      </div>
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:10px;font-size:14px">משימות אחרונות</div>
+        ${d.tasks.length===0?'<div style="color:#6b7280;font-size:13px">אין משימות עדיין</div>':
+          d.tasks.slice(-4).reverse().map(t=>`
+          <div class="summary-row"><span>${t.title}</span><span class="badge" style="background:${taskStatusColors[t.status]}22;color:${taskStatusColors[t.status]}">${t.status}</span></div>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  if (state.tab === "payments") {
+    html += `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:800;font-size:17px">תשלומים</div>
+      <button class="btn-primary" onclick="togglePaymentForm()">+ הוסף תשלום</button>
+    </div>
+    ${state.showPaymentForm ? `
+    <div class="card" style="border-color:#f59e0b55;margin-bottom:16px">
+      <div style="font-weight:700;color:#f59e0b;margin-bottom:14px">${state.editingPayment!==null?"✏️ עריכת תשלום":"➕ תשלום חדש"}</div>
+      <div class="form-grid">
+        <div class="form-group"><label>שם/תיאור</label><input id="p_name" value="${state.paymentForm.name}" oninput="state.paymentForm.name=this.value" placeholder="לדוג׳ אינסטלטור"></div>
+        <div class="form-group"><label>סכום (₪)</label><input id="p_amount" type="number" value="${state.paymentForm.amount}" oninput="state.paymentForm.amount=this.value" placeholder="0"></div>
+        <div class="form-group"><label>קטגוריה</label><select onchange="state.paymentForm.category=this.value">${categories.map(c=>`<option ${state.paymentForm.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
+        <div class="form-group"><label>סטטוס</label><select onchange="state.paymentForm.status=this.value">${["שולם","ממתין","בוטל"].map(s=>`<option ${state.paymentForm.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+        <div class="form-group"><label>תאריך</label><input type="date" value="${state.paymentForm.date}" onchange="state.paymentForm.date=this.value"></div>
+        <div class="form-group"><label>הערות</label><input value="${state.paymentForm.notes}" oninput="state.paymentForm.notes=this.value" placeholder="הערה..."></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn-primary" onclick="savePayment()">שמור</button>
+        <button class="btn-ghost" onclick="cancelPaymentForm()">ביטול</button>
+      </div>
+    </div>` : ""}
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      ${[["שולם",totalPaid,"#4ade80"],["ממתין",totalPending,"#facc15"],['סה"כ',totalPayments,"#60a5fa"]].map(([l,v,c])=>`
+      <div style="background:#1a1f2e;border-radius:10px;padding:10px 14px;border:1px solid #2a3050;flex:1;text-align:center">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${l}</div>
+        <div style="font-weight:800;color:${c};font-size:16px">₪${v.toLocaleString()}</div>
+      </div>`).join("")}
+    </div>
+    ${d.payments.length===0?'<div style="text-align:center;padding:40px;color:#6b7280"><div style="font-size:36px">💳</div><div style="margin-top:8px">אין תשלומים עדיין</div></div>':
+      d.payments.map((p,i)=>`
+      <div class="payment-row">
+        <div class="dot" style="background:${statusColors[p.status]||'#9ca3af'}"></div>
+        <div class="row-info">
+          <div class="row-title">${p.name}</div>
+          <div class="row-sub">${p.category} · ${toILDate(p.date)}${p.notes?` · ${p.notes}`:""}</div>
+        </div>
+        <div style="font-weight:800;font-size:16px;color:${statusColors[p.status]||'#e8e8e8'}">₪${Number(p.amount).toLocaleString()}</div>
+        <span class="badge" style="background:${(statusColors[p.status]||'#9ca3af')}22;color:${statusColors[p.status]||'#9ca3af'}">${p.status}</span>
+        <button class="icon-btn" onclick="editPayment(${i})">✏️</button>
+        <button class="icon-btn" onclick="deletePayment(${i})">🗑️</button>
+      </div>`).join("")}`;
+  }
+
+  if (state.tab === "tasks") {
+    html += `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-weight:800;font-size:17px">משימות</div>
+      <button class="btn-primary" onclick="toggleTaskForm()">+ הוסף משימה</button>
+    </div>
+    ${state.showTaskForm ? `
+    <div class="card" style="border-color:#60a5fa55;margin-bottom:16px">
+      <div style="font-weight:700;color:#60a5fa;margin-bottom:14px">${state.editingTask!==null?"✏️ עריכת משימה":"➕ משימה חדשה"}</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>כותרת</label><input value="${state.taskForm.title}" oninput="state.taskForm.title=this.value" placeholder="לדוג׳ ריצוף חדר שינה"></div>
+        <div class="form-group"><label>קטגוריה</label><select onchange="state.taskForm.category=this.value">${taskCategories.map(c=>`<option ${state.taskForm.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
+        <div class="form-group"><label>סטטוס</label><select onchange="state.taskForm.status=this.value">${["טרם התחיל","בתהליך","הושלם","דחוף"].map(s=>`<option ${state.taskForm.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+        <div class="form-group"><label>תאריך יעד</label><input type="date" value="${state.taskForm.dueDate}" onchange="state.taskForm.dueDate=this.value"></div>
+        <div class="form-group"><label>אחראי</label><input value="${state.taskForm.assignee}" oninput="state.taskForm.assignee=this.value" placeholder="שם הקבלן / אחראי"></div>
+        <div class="form-group full"><label>הערות</label><input value="${state.taskForm.notes}" oninput="state.taskForm.notes=this.value" placeholder="פרטים נוספים..."></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn-primary" onclick="saveTask()">שמור</button>
+        <button class="btn-ghost" onclick="cancelTaskForm()">ביטול</button>
+      </div>
+    </div>` : ""}
+    ${totalTasks>0?`
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;color:#9ca3af">
+        <span>התקדמות כוללת</span><span>${completedTasks}/${totalTasks} הושלמו</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${totalTasks?(completedTasks/totalTasks*100):0}%;background:#4ade80"></div></div>
+    </div>`:""}
+    ${d.tasks.length===0?'<div style="text-align:center;padding:40px;color:#6b7280"><div style="font-size:36px">✅</div><div style="margin-top:8px">אין משימות עדיין</div></div>':""}
+    ${["דחוף","בתהליך","טרם התחיל","הושלם"].map(status=>{
+      const group = d.tasks.map((t,i)=>({...t,_i:i})).filter(t=>t.status===status);
+      if(!group.length) return "";
+      return `<div style="margin-bottom:18px">
+        <div class="section-title" style="color:${taskStatusColors[status]}">${status} (${group.length})</div>
+        ${group.map(t=>`
+        <div class="payment-row" style="border-color:${taskStatusColors[t.status]}33">
+          <button onclick="cycleTaskStatus(${t._i})" style="width:22px;height:22px;border-radius:50%;background:${taskStatusColors[t.status]}44;border:2px solid ${taskStatusColors[t.status]};cursor:pointer;color:${taskStatusColors[t.status]};font-size:11px;flex-shrink:0">${t.status==="הושלם"?"✓":""}</button>
+          <div class="row-info">
+            <div class="row-title" style="${t.status==='הושלם'?'text-decoration:line-through;color:#6b7280':''}">${t.title}</div>
+            <div class="row-sub">${t.category}${t.assignee?` · ${t.assignee}`:""}${t.dueDate?` · יעד: ${toILDate(t.dueDate)}`:""}${t.notes?` · ${t.notes}`:""}</div>
+          </div>
+          <button class="icon-btn" onclick="editTask(${t._i})">✏️</button>
+          <button class="icon-btn" onclick="deleteTask(${t._i})">🗑️</button>
+        </div>`).join("")}
+      </div>`;
+    }).join("")}`;
+  }
+
+  html += `</div><div class="footer">☁️ מסונכרן דרך Firebase · עובד מכל מכשיר</div>`;
+  app.innerHTML = html;
+}
+
+// Actions
+function setTab(t) { state.tab=t; render(); }
+function clearError() { state.error=null; render(); }
+function toggleExport() { state.showExport=!state.showExport; render(); }
+function copyData() { navigator.clipboard.writeText(JSON.stringify(state.data,null,2)); }
+function toggleBudgetEdit() { state.budgetInput=state.data.budget; state.showBudgetEdit=true; render(); }
+function saveBudget() { const d={...state.data,budget:Number(state.budgetInput)||0}; state.showBudgetEdit=false; saveData(d); }
+
+function togglePaymentForm() {
+  state.showPaymentForm=!state.showPaymentForm;
+  state.editingPayment=null;
+  state.paymentForm={name:"",amount:"",category:"כללי",status:"ממתין",date:todayISO(),notes:""};
+  render();
+}
+function cancelPaymentForm() { state.showPaymentForm=false; state.editingPayment=null; render(); }
+function savePayment() {
+  if(!state.paymentForm.name||!state.paymentForm.amount) return;
+  const payments=[...state.data.payments];
+  if(state.editingPayment!==null) payments[state.editingPayment]={...state.paymentForm};
+  else payments.push({...state.paymentForm,id:Date.now()});
+  state.showPaymentForm=false; state.editingPayment=null;
+  state.paymentForm={name:"",amount:"",category:"כללי",status:"ממתין",date:todayISO(),notes:""};
+  saveData({...state.data,payments});
+}
+function editPayment(i) { state.paymentForm={...state.data.payments[i]}; state.editingPayment=i; state.showPaymentForm=true; render(); }
+function deletePayment(i) { if(!confirm("למחוק תשלום זה?")) return; saveData({...state.data,payments:state.data.payments.filter((_,idx)=>idx!==i)}); }
+
+function toggleTaskForm() {
+  state.showTaskForm=!state.showTaskForm;
+  state.editingTask=null;
+  state.taskForm={title:"",category:"שיפוץ",status:"טרם התחיל",dueDate:"",notes:"",assignee:""};
+  render();
+}
+function cancelTaskForm() { state.showTaskForm=false; state.editingTask=null; render(); }
+function saveTask() {
+  if(!state.taskForm.title) return;
+  const tasks=[...state.data.tasks];
+  if(state.editingTask!==null) tasks[state.editingTask]={...state.taskForm};
+  else tasks.push({...state.taskForm,id:Date.now()});
+  state.showTaskForm=false; state.editingTask=null;
+  state.taskForm={title:"",category:"שיפוץ",status:"טרם התחיל",dueDate:"",notes:"",assignee:""};
+  saveData({...state.data,tasks});
+}
+function editTask(i) { state.taskForm={...state.data.tasks[i]}; state.editingTask=i; state.showTaskForm=true; render(); }
+function deleteTask(i) { if(!confirm("למחוק משימה זו?")) return; saveData({...state.data,tasks:state.data.tasks.filter((_,idx)=>idx!==i)}); }
+function cycleTaskStatus(i) {
+  const statuses=["טרם התחיל","בתהליך","הושלם","דחוף"];
+  const tasks=[...state.data.tasks];
+  tasks[i]={...tasks[i],status:statuses[(statuses.indexOf(tasks[i].status)+1)%statuses.length]};
+  saveData({...state.data,tasks});
+}
+
+loadData();
+</script>
+</body>
+</html>
